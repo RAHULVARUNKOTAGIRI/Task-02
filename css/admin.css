@@ -1,0 +1,219 @@
+/* =============================================================================
+   admin.css - Admin console specific styles (sidebar layout, list cards,
+   form/poll builder). Depends on tokens defined in style.css.
+   ============================================================================= */
+
+/* ---- Admin shell: sidebar + content ------------------------------------- */
+.admin-shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  min-height: calc(100vh - var(--navbar-height));
+}
+
+.sidebar {
+  background-color: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  padding: var(--space-lg) var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.sidebar__heading {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  padding: 0 var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.sidebar__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.sidebar__item:hover {
+  background-color: var(--color-surface-alt);
+  color: var(--color-text);
+}
+
+.sidebar__item.is-active {
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.admin-content {
+  padding: var(--space-xl) var(--space-lg);
+  overflow-x: hidden;
+}
+
+/* ---- List cards (forms & polls) ----------------------------------------- */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.list-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+
+.list-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.list-card__title {
+  font-size: 1.1rem;
+  margin-bottom: var(--space-xs);
+}
+
+.list-card__sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm) var(--space-md);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.list-card__actions {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+/* ---- Builder (form & poll editors inside the modal) --------------------- */
+.editor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.builder__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.builder__fields,
+.builder__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.builder__empty {
+  padding: var(--space-lg);
+  text-align: center;
+  color: var(--color-text-muted);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+/* Individual field row in the form builder */
+.field-row {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  background-color: var(--color-surface-alt);
+}
+
+.field-row__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.field-row__index {
+  font-weight: 700;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.field-row__actions {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.field-row__controls {
+  display: grid;
+  grid-template-columns: 2fr 1fr auto;
+  gap: var(--space-md);
+  align-items: end;
+}
+
+/* Options editor shared by form fields and polls */
+.options-editor {
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px dashed var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.options-editor__title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.options-editor__row {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+/* ---- Responsive ---------------------------------------------------------- */
+@media (max-width: 860px) {
+  .admin-shell {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .sidebar__heading {
+    width: 100%;
+  }
+  .sidebar__item {
+    width: auto;
+  }
+  .field-row__controls {
+    grid-template-columns: 1fr;
+  }
+  .admin-content {
+    padding: var(--space-lg) var(--space-md);
+  }
+}

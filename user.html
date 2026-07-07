@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Portal · Smart Survey Platform</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/user.css" />
+  </head>
+  <body>
+    <header class="navbar">
+      <a class="navbar__brand" href="index.html">
+        <span class="navbar__logo" aria-hidden="true">📊</span>
+        <span>Smart Survey Platform</span>
+      </a>
+      <nav class="navbar__links" aria-label="Primary">
+        <a class="navbar__link" href="index.html" data-nav>Home</a>
+        <a class="navbar__link" href="admin.html" data-nav>Admin</a>
+        <a class="navbar__link" href="user.html" data-nav>User</a>
+        <a class="navbar__link" href="dashboard.html" data-nav>Dashboard</a>
+      </nav>
+    </header>
+
+    <main class="page">
+      <div class="page__header">
+        <div>
+          <h1 class="page__title">User Portal</h1>
+          <p class="page__subtitle">
+            Fill out active forms and vote in live polls — everything below is
+            generated from the admin's configuration.
+          </p>
+        </div>
+      </div>
+
+      <!-- Toolbar: tabs (with live counts) + instant search -->
+      <div class="user-toolbar">
+        <div class="tabs" role="tablist" aria-label="User sections">
+          <button class="tab" type="button" role="tab" data-user-view="forms">
+            Forms <span class="tab__count" id="formsCount">0</span>
+          </button>
+          <button class="tab" type="button" role="tab" data-user-view="polls">
+            Polls <span class="tab__count" id="pollsCount">0</span>
+          </button>
+        </div>
+
+        <label class="user-search">
+          <span class="visually-hidden">Search forms and polls</span>
+          <input
+            class="form-control"
+            type="search"
+            id="userSearch"
+            placeholder="🔍 Search forms &amp; polls…"
+          />
+        </label>
+      </div>
+
+      <!-- Active forms -->
+      <section data-user-panel="forms" aria-label="Active forms">
+        <div class="tile-grid" id="userFormsList"></div>
+      </section>
+
+      <!-- Active polls -->
+      <section data-user-panel="polls" aria-label="Active polls" hidden>
+        <div class="poll-list" id="userPollsList"></div>
+      </section>
+    </main>
+
+    <script type="module" src="js/user.js"></script>
+  </body>
+</html>

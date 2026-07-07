@@ -1,0 +1,254 @@
+/* =============================================================================
+   user.css - End-user portal styles (toolbar, tabs, form tiles, poll cards).
+   Depends on tokens defined in style.css.
+   ============================================================================= */
+
+/* ---- Toolbar: tabs + search --------------------------------------------- */
+.user-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.tabs {
+  display: inline-flex;
+  gap: var(--space-xs);
+  padding: var(--space-xs);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 0.5rem 1.1rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.tab:hover {
+  color: var(--color-text);
+}
+
+.tab.is-active {
+  background-color: var(--color-primary);
+  color: #fff;
+}
+
+/* Count bubble inside a tab */
+.tab__count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.4rem;
+  height: 1.4rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background-color: var(--color-surface-alt);
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.tab.is-active .tab__count {
+  background-color: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.user-search {
+  flex: 1 1 260px;
+  max-width: 360px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---- Form tiles ---------------------------------------------------------- */
+.tile__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-xs);
+}
+
+.tile--done {
+  opacity: 0.85;
+}
+
+.tile__notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.tile__foot {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.tile__foot--deadline {
+  color: var(--color-warning);
+}
+
+/* ---- Poll cards ---------------------------------------------------------- */
+.poll-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: var(--space-lg);
+}
+
+.poll-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+
+.poll-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.poll-card__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.poll-card__question {
+  font-size: 1.1rem;
+}
+
+.poll-card__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.poll-card__count {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.poll-card__hint {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.poll-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.poll-card__total {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-sm);
+}
+
+/* ---- Poll result progress bars ------------------------------------------ */
+.result-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.result-bar__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  font-size: 0.9rem;
+}
+
+.result-bar__labelwrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.result-bar__label {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.result-bar__value {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.result-bar__track {
+  height: 10px;
+  background-color: var(--color-surface-alt);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.result-bar__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-info));
+  transition: width 500ms ease;
+}
+
+/* Leading option gets a bolder gradient */
+.result-bar--leading .result-bar__fill {
+  background: linear-gradient(90deg, var(--color-success), #34d399);
+}
+
+/* "Your vote" marker */
+.tag-you {
+  flex: 0 0 auto;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+/* ---- Responsive ---------------------------------------------------------- */
+@media (max-width: 640px) {
+  .tile-grid,
+  .poll-list {
+    grid-template-columns: 1fr;
+  }
+  .user-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .user-search {
+    max-width: none;
+  }
+}

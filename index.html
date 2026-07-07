@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Survey, Forms &amp; Polling Platform</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <!-- Top navigation shared across pages -->
+    <header class="navbar">
+      <a class="navbar__brand" href="index.html">
+        <span class="navbar__logo" aria-hidden="true">📊</span>
+        <span>Smart Survey Platform</span>
+      </a>
+      <nav class="navbar__links" aria-label="Primary">
+        <a class="navbar__link" href="index.html" data-nav>Home</a>
+        <a class="navbar__link" href="admin.html" data-nav>Admin</a>
+        <a class="navbar__link" href="user.html" data-nav>User</a>
+        <a class="navbar__link" href="dashboard.html" data-nav>Dashboard</a>
+      </nav>
+    </header>
+
+    <main class="page">
+      <!-- Hero -->
+      <section class="hero">
+        <h1 class="hero__title">
+          Build forms &amp; polls
+          <span class="hero__accent">without writing code</span>
+        </h1>
+        <p class="hero__subtitle">
+          Design dynamic forms and live polls as an admin, collect responses as
+          a user, and watch results update in real time.
+        </p>
+        <div class="hero__actions">
+          <a class="btn btn--primary btn--lg" href="admin.html">Start Building →</a>
+          <a class="btn btn--secondary btn--lg" href="user.html">Explore as User</a>
+        </div>
+      </section>
+
+      <!-- Feature / destination cards -->
+      <section class="tile-grid" aria-label="Choose a section">
+        <article class="tile">
+          <span class="tile__icon" aria-hidden="true">🛠️</span>
+          <h3 class="tile__title">Admin Console</h3>
+          <p class="tile__desc">
+            Create, edit, enable/disable, search and filter forms and polls
+            using dynamic drag-friendly builders.
+          </p>
+          <a class="btn btn--primary btn--block" href="admin.html">Open Admin</a>
+        </article>
+
+        <article class="tile">
+          <span class="tile__icon" aria-hidden="true">🙋</span>
+          <h3 class="tile__title">User Portal</h3>
+          <p class="tile__desc">
+            View active forms and polls, fill dynamically generated forms,
+            vote, and see live poll results with progress bars.
+          </p>
+          <a class="btn btn--primary btn--block" href="user.html">Open Portal</a>
+        </article>
+
+        <article class="tile">
+          <span class="tile__icon" aria-hidden="true">📈</span>
+          <h3 class="tile__title">Dashboard</h3>
+          <p class="tile__desc">
+            Live statistics: totals, active counts, most submitted form,
+            highest voted poll, plus JSON and CSV export.
+          </p>
+          <a class="btn btn--primary btn--block" href="dashboard.html">Open Dashboard</a>
+        </article>
+      </section>
+    </main>
+
+    <!-- Shared shell script (seed + theme + active nav). Loaded as a module. -->
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>

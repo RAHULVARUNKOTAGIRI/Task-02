@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Console · Smart Survey Platform</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/admin.css" />
+  </head>
+  <body>
+    <header class="navbar">
+      <a class="navbar__brand" href="index.html">
+        <span class="navbar__logo" aria-hidden="true">📊</span>
+        <span>Smart Survey Platform</span>
+      </a>
+      <nav class="navbar__links" aria-label="Primary">
+        <a class="navbar__link" href="index.html" data-nav>Home</a>
+        <a class="navbar__link" href="admin.html" data-nav>Admin</a>
+        <a class="navbar__link" href="user.html" data-nav>User</a>
+        <a class="navbar__link" href="dashboard.html" data-nav>Dashboard</a>
+      </nav>
+    </header>
+
+    <div class="admin-shell">
+      <!-- Sidebar navigation between Forms and Polls management -->
+      <aside class="sidebar" aria-label="Admin sections">
+        <span class="sidebar__heading">Manage</span>
+        <button class="sidebar__item" type="button" data-view="forms">
+          📋 Forms
+        </button>
+        <button class="sidebar__item" type="button" data-view="polls">
+          🗳️ Polls
+        </button>
+      </aside>
+
+      <main class="admin-content">
+        <!-- Forms panel -->
+        <section data-view-panel="forms" aria-label="Manage forms">
+          <div class="page__header">
+            <div>
+              <h1 class="page__title">Forms</h1>
+              <p class="page__subtitle">Create and manage dynamic forms.</p>
+            </div>
+            <button class="btn btn--primary" type="button" id="createFormBtn">
+              + Create Form
+            </button>
+          </div>
+
+          <div class="toolbar">
+            <label class="toolbar__search labeled">
+              <span class="labeled__caption">Search forms</span>
+              <input
+                class="form-control"
+                type="search"
+                id="formSearch"
+                placeholder="Search by form name…"
+              />
+            </label>
+            <label class="toolbar__filter labeled">
+              <span class="labeled__caption">Filter</span>
+              <select class="form-control" id="formFilter"></select>
+            </label>
+          </div>
+
+          <div class="list" id="formsList"></div>
+        </section>
+
+        <!-- Polls panel -->
+        <section data-view-panel="polls" aria-label="Manage polls" hidden>
+          <div class="page__header">
+            <div>
+              <h1 class="page__title">Polls</h1>
+              <p class="page__subtitle">Create and manage polls.</p>
+            </div>
+            <button class="btn btn--primary" type="button" id="createPollBtn">
+              + Create Poll
+            </button>
+          </div>
+
+          <div class="toolbar">
+            <label class="toolbar__search labeled">
+              <span class="labeled__caption">Search polls</span>
+              <input
+                class="form-control"
+                type="search"
+                id="pollSearch"
+                placeholder="Search by question…"
+              />
+            </label>
+            <label class="toolbar__filter labeled">
+              <span class="labeled__caption">Filter</span>
+              <select class="form-control" id="pollFilter"></select>
+            </label>
+          </div>
+
+          <div class="list" id="pollsList"></div>
+        </section>
+      </main>
+    </div>
+
+    <!-- app.js is imported by admin.js, so the shared shell initialises too. -->
+    <script type="module" src="js/admin.js"></script>
+  </body>
+</html>
