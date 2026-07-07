@@ -35,6 +35,9 @@
         <div class="hero__actions">
           <a class="btn btn--primary btn--lg" href="admin.html">Start Building →</a>
           <a class="btn btn--secondary btn--lg" href="user.html">Explore as User</a>
+          <button class="btn btn--secondary btn--lg" type="button" id="loadSampleBtn">
+            ✨ Load Sample Data
+          </button>
         </div>
       </section>
 
@@ -72,7 +75,7 @@
       </section>
     </main>
 
-    <!-- Shared shell script (seed + theme + active nav). Loaded as a module. -->
-    <script type="module" src="js/app.js"></script>
+    <!-- Home controller (imports app.js for the shared shell). -->
+    <script type="module" src="js/home.js"></script>
   </body>
 </html>

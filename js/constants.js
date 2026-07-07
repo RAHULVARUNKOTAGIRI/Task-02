@@ -122,6 +122,9 @@ export const MESSAGES = Object.freeze({
   SELECT_VOTE_OPTION: 'Please select an option to vote.',
   NO_FORMS_MATCH: 'No forms match your search.',
   NO_POLLS_MATCH: 'No polls match your search.',
+  CONFIRM_LOAD_SAMPLE:
+    'This replaces all current forms, polls, responses and votes with the sample data set. Continue?',
+  SAMPLE_LOADED: 'Sample data loaded. Open Admin, User, or Dashboard to explore it.',
 });
 
 /* Field types that support option lists, exposed as a labelled map too */

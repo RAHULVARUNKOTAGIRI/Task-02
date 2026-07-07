@@ -209,6 +209,18 @@ const SAMPLE_VOTES = {
 };
 
 /**
+ * Write the full sample data set into storage, overwriting any current data.
+ * Shared by the one-time seeding and the manual "Load Sample Data" action.
+ */
+function writeSampleData() {
+  saveToStorage(STORAGE_KEYS.FORMS, SAMPLE_FORMS);
+  saveToStorage(STORAGE_KEYS.POLLS, SAMPLE_POLLS);
+  saveToStorage(STORAGE_KEYS.RESPONSES, SAMPLE_RESPONSES);
+  saveToStorage(STORAGE_KEYS.VOTES, SAMPLE_VOTES);
+  saveToStorage(STORAGE_KEYS.SUBMISSIONS, {});
+}
+
+/**
  * Seed the sample data set exactly once, ever. A persistent "seeded" flag
  * ensures we never re-add samples after the user has started managing data -
  * so deleting the sample forms/polls makes them stay deleted across refreshes.
@@ -226,10 +238,15 @@ export function seedIfEmpty() {
   const hasPolls = (loadFromStorage(STORAGE_KEYS.POLLS, []) ?? []).length > 0;
   if (hasForms || hasPolls) return false;
 
-  saveToStorage(STORAGE_KEYS.FORMS, SAMPLE_FORMS);
-  saveToStorage(STORAGE_KEYS.POLLS, SAMPLE_POLLS);
-  saveToStorage(STORAGE_KEYS.RESPONSES, SAMPLE_RESPONSES);
-  saveToStorage(STORAGE_KEYS.VOTES, SAMPLE_VOTES);
-  saveToStorage(STORAGE_KEYS.SUBMISSIONS, {});
+  writeSampleData();
   return true;
+}
+
+/**
+ * Manually (re)load the sample data everywhere, replacing current data.
+ * Triggered by the "Load Sample Data" button on the home page.
+ */
+export function loadSampleData() {
+  writeSampleData();
+  saveToStorage(STORAGE_KEYS.SEEDED, true);
 }

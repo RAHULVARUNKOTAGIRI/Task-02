@@ -4,6 +4,7 @@
  * and delegates rendering to the Forms and Polls section modules.
  */
 
+import { STORAGE_KEYS } from './constants.js';
 import { debounce } from './utils.js';
 import { createUserFormsSection } from './userForms.js';
 import { createUserPollsSection } from './userPolls.js';
@@ -72,6 +73,14 @@ function bindEvents() {
       renderAll();
     }, 200)
   );
+
+  // Live-refresh when data changes in another tab (e.g. "Load Sample Data").
+  window.addEventListener('storage', (event) => {
+    if (Object.values(STORAGE_KEYS).includes(event.key)) {
+      renderAll();
+      updateCounts();
+    }
+  });
 }
 
 /** Entry point for the user page. */

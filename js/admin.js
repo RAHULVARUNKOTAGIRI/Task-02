@@ -5,7 +5,7 @@
  * dedicated section modules (adminForms.js / adminPolls.js).
  */
 
-import { FILTERS } from './constants.js';
+import { FILTERS, STORAGE_KEYS } from './constants.js';
 import { debounce, populateFilter } from './utils.js';
 import { createFormsSection } from './adminForms.js';
 import { createPollsSection } from './adminPolls.js';
@@ -97,6 +97,14 @@ function bindEvents() {
   elements.pollFilter.addEventListener('change', (event) => {
     state.pollFilter = event.target.value;
     pollsSection.render();
+  });
+
+  // Live-refresh when data changes in another tab (e.g. "Load Sample Data").
+  window.addEventListener('storage', (event) => {
+    if (Object.values(STORAGE_KEYS).includes(event.key)) {
+      formsSection.render();
+      pollsSection.render();
+    }
   });
 }
 
