@@ -158,6 +158,12 @@
   color: var(--color-text-muted);
 }
 
+.poll-card__deadline {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-warning);
+}
+
 .poll-card__body {
   display: flex;
   flex-direction: column;

@@ -103,6 +103,7 @@ const SAMPLE_POLLS = [
     question: 'Which feature should we build next?',
     type: POLL_TYPES.SINGLE,
     status: STATUS.ACTIVE,
+    activeUntil: null,
     createdAt: BASE_TIME,
     options: [
       { id: 'ft-dark', text: 'Dark Mode' },
@@ -116,6 +117,7 @@ const SAMPLE_POLLS = [
     question: 'Which days work best for the community meetup?',
     type: POLL_TYPES.MULTIPLE,
     status: STATUS.ACTIVE,
+    activeUntil: '2026-12-31',
     createdAt: BASE_TIME + DAY,
     options: [
       { id: 'dy-mon', text: 'Monday' },
@@ -129,6 +131,7 @@ const SAMPLE_POLLS = [
     question: 'How would you rate our support experience?',
     type: POLL_TYPES.SINGLE,
     status: STATUS.INACTIVE,
+    activeUntil: null,
     createdAt: BASE_TIME + 2 * DAY,
     options: [
       { id: 'sp-great', text: 'Great' },
@@ -206,11 +209,19 @@ const SAMPLE_VOTES = {
 };
 
 /**
- * Seed the sample data set, but only when storage is empty so existing
- * user-created data is preserved.
+ * Seed the sample data set exactly once, ever. A persistent "seeded" flag
+ * ensures we never re-add samples after the user has started managing data -
+ * so deleting the sample forms/polls makes them stay deleted across refreshes.
  * @returns {boolean} whether seeding happened
  */
 export function seedIfEmpty() {
+  // Already seeded once (even if the user later deleted everything) - do nothing.
+  if (loadFromStorage(STORAGE_KEYS.SEEDED, false)) return false;
+
+  // Mark as seeded up front so this only ever runs once.
+  saveToStorage(STORAGE_KEYS.SEEDED, true);
+
+  // If the user somehow already has data, respect it and skip the samples.
   const hasForms = (loadFromStorage(STORAGE_KEYS.FORMS, []) ?? []).length > 0;
   const hasPolls = (loadFromStorage(STORAGE_KEYS.POLLS, []) ?? []).length > 0;
   if (hasForms || hasPolls) return false;

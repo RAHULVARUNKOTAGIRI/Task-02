@@ -15,6 +15,7 @@ import {
   showToast,
   calculatePercentage,
   getEffectiveStatus,
+  formatDay,
 } from './utils.js';
 
 /* Suffixes for the per-poll marker keys stored alongside vote tallies. */
@@ -96,6 +97,17 @@ export function createUserPollsSection({ listEl, getSearchTerm }) {
       className: 'poll-card',
       children: [header],
     });
+
+    // Show the closing date when the admin scheduled one (only active polls
+    // reach here, so any date shown is still in the future).
+    if (poll.activeUntil) {
+      card.appendChild(
+        createElement('span', {
+          className: 'poll-card__deadline',
+          text: `⏳ Closes on ${formatDay(poll.activeUntil)}`,
+        })
+      );
+    }
 
     card.appendChild(hasVoted ? renderResults(poll) : renderVotingForm(poll, card));
     return card;

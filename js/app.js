@@ -123,16 +123,16 @@ export function confirmAction(
   { confirmText = 'Delete', title = 'Please confirm' } = {}
 ) {
   return new Promise((resolve) => {
+    // Record the choice, then close. onClose resolves with it exactly once, so
+    // clicking Delete first sets `choice = true` before the modal closes, while
+    // dismissing via overlay/Escape leaves it false.
+    let choice = false;
+
     const cancelButton = createElement('button', {
       className: 'btn btn--secondary',
       text: 'Cancel',
       attrs: { type: 'button' },
-      on: {
-        click: () => {
-          modal.close();
-          resolve(false);
-        },
-      },
+      on: { click: () => modal.close() },
     });
 
     const confirmButton = createElement('button', {
@@ -141,8 +141,8 @@ export function confirmAction(
       attrs: { type: 'button' },
       on: {
         click: () => {
+          choice = true;
           modal.close();
-          resolve(true);
         },
       },
     });
@@ -151,7 +151,7 @@ export function confirmAction(
       title,
       content: createElement('p', { text: message }),
       actions: [cancelButton, confirmButton],
-      onClose: () => resolve(false),
+      onClose: () => resolve(choice),
     });
   });
 }

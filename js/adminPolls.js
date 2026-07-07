@@ -20,6 +20,8 @@ import {
   clearElement,
   showToast,
   formatDate,
+  formatDay,
+  isExpired,
   applySearchAndFilter,
   renderEmpty,
   statusPill,
@@ -80,6 +82,16 @@ export function createPollsSection({ listEl, getSearchTerm, getFilter }) {
    * @returns {HTMLElement}
    */
   function renderCard(poll, totalVotes) {
+    // Schedule note: shows the expiry date, flagged when already lapsed.
+    const scheduleNote = poll.activeUntil
+      ? createElement('span', {
+          className: isExpired(poll) ? 'schedule schedule--expired' : 'schedule',
+          text: isExpired(poll)
+            ? `Expired on ${formatDay(poll.activeUntil)}`
+            : `Active until ${formatDay(poll.activeUntil)}`,
+        })
+      : null;
+
     const meta = createElement('div', {
       className: 'list-card__meta',
       children: [
@@ -97,6 +109,7 @@ export function createPollsSection({ listEl, getSearchTerm, getFilter }) {
             createElement('span', {
               text: `Created ${formatDate(poll.createdAt)}`,
             }),
+            scheduleNote,
           ],
         }),
       ],
@@ -155,12 +168,19 @@ export function createPollsSection({ listEl, getSearchTerm, getFilter }) {
       ),
     });
 
+    // Optional scheduled expiry: the poll auto-closes after this date.
+    const activeUntilInput = createElement('input', {
+      className: 'form-control',
+      attrs: { type: 'date', value: existing?.activeUntil ?? '' },
+    });
+
     const topRow = createElement('div', {
       className: 'editor-grid',
       children: [
         labeledBlock('Question', questionInput),
         labeledBlock('Choice Type', typeSelect),
         labeledBlock('Status', statusSelect),
+        labeledBlock('Active Until (optional)', activeUntilInput),
       ],
     });
 
@@ -189,6 +209,7 @@ export function createPollsSection({ listEl, getSearchTerm, getFilter }) {
             question: questionInput.value.trim(),
             type: typeSelect.value,
             status: statusSelect.value,
+            activeUntil: activeUntilInput.value || null,
           };
           if (save(config)) modal.close();
         },

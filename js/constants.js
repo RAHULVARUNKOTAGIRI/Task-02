@@ -11,6 +11,7 @@ export const STORAGE_KEYS = Object.freeze({
   RESPONSES: 'ssfp_responses',
   VOTES: 'ssfp_votes',
   SUBMISSIONS: 'ssfp_submissions', // tracks which single-submission forms a user submitted
+  SEEDED: 'ssfp_seeded', // one-time flag so sample data is only ever seeded once
 });
 
 /* Supported form field types */
