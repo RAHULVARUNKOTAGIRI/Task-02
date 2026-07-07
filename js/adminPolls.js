@@ -13,8 +13,9 @@ import {
   POLL_TYPE_LABELS,
   TOAST_TYPES,
   MESSAGES,
+  VOTE_MARKERS,
 } from './constants.js';
-import { getPolls, savePolls, getVotes } from './storage.js';
+import { getPolls, savePolls, getVotes, saveVotes } from './storage.js';
 import {
   createElement,
   clearElement,
@@ -266,11 +267,20 @@ export function createPollsSection({ listEl, getSearchTerm, getFilter }) {
     render();
   }
 
-  /** Delete a poll after confirmation. */
+  /** Delete a poll and its associated votes after confirmation. */
   async function remove(pollId) {
     const confirmed = await confirmAction(MESSAGES.CONFIRM_DELETE_POLL);
     if (!confirmed) return;
+
     savePolls(getPolls().filter((poll) => poll.id !== pollId));
+
+    // Cascade: drop this poll's vote tallies and per-browser markers.
+    const votes = getVotes();
+    delete votes[pollId];
+    delete votes[`${pollId}${VOTE_MARKERS.VOTED}`];
+    delete votes[`${pollId}${VOTE_MARKERS.CHOICE}`];
+    saveVotes(votes);
+
     showToast(MESSAGES.POLL_DELETED, TOAST_TYPES.SUCCESS);
     render();
   }

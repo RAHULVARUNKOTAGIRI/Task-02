@@ -15,7 +15,14 @@ import {
   TOAST_TYPES,
   MESSAGES,
 } from './constants.js';
-import { getForms, saveForms, getResponses } from './storage.js';
+import {
+  getForms,
+  saveForms,
+  getResponses,
+  saveResponses,
+  getSubmissions,
+  saveSubmissions,
+} from './storage.js';
 import {
   createElement,
   clearElement,
@@ -263,11 +270,23 @@ export function createFormsSection({ listEl, getSearchTerm, getFilter }) {
     render();
   }
 
-  /** Delete a form after confirmation. */
+  /** Delete a form and its associated data after confirmation. */
   async function remove(formId) {
     const confirmed = await confirmAction(MESSAGES.CONFIRM_DELETE_FORM);
     if (!confirmed) return;
+
     saveForms(getForms().filter((form) => form.id !== formId));
+
+    // Cascade: drop this form's collected responses...
+    const responses = getResponses();
+    delete responses[formId];
+    saveResponses(responses);
+
+    // ...and its single-submission history so the count stays accurate.
+    const submissions = getSubmissions();
+    delete submissions[formId];
+    saveSubmissions(submissions);
+
     showToast(MESSAGES.FORM_DELETED, TOAST_TYPES.SUCCESS);
     render();
   }

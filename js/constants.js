@@ -79,6 +79,12 @@ export const STATUS_LABELS = Object.freeze({
 /* Derived (not stored) label shown when an item's "active until" date passed */
 export const EXPIRED_LABEL = 'Expired';
 
+/* Suffixes for per-poll marker keys kept alongside vote tallies in storage */
+export const VOTE_MARKERS = Object.freeze({
+  VOTED: '__voted', // this browser already voted in the poll
+  CHOICE: '__choice', // the option id(s) this browser picked
+});
+
 /* Filter options used across admin lists */
 export const FILTERS = Object.freeze({
   ALL: 'all',

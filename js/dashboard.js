@@ -41,17 +41,17 @@ function computeStats() {
   const responses = getResponses();
   const votes = getVotes();
 
-  const totalResponses = Object.values(responses).reduce(
-    (sum, list) => sum + list.length,
+  // Derive totals from the CURRENT forms/polls only, so orphaned data left by
+  // a deleted form/poll never inflates the counts (self-healing).
+  const totalResponses = forms.reduce(
+    (sum, form) => sum + (responses[form.id]?.length ?? 0),
     0
   );
 
-  const totalVotes = Object.entries(votes).reduce((sum, [key, value]) => {
-    // Skip internal marker keys (e.g. "__voted", "__choice"); only sum the
-    // per-poll option tally maps.
-    if (key.includes('__')) return sum;
-    return sum + Object.values(value).reduce((inner, count) => inner + count, 0);
-  }, 0);
+  const totalVotes = polls.reduce(
+    (sum, poll) => sum + totalVotesForPoll(poll, votes),
+    0
+  );
 
   return {
     forms,

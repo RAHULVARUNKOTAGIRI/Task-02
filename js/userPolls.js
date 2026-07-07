@@ -7,7 +7,14 @@
  * Exposed as a factory so user.js owns the shared search state.
  */
 
-import { STATUS, POLL_TYPES, POLL_TYPE_LABELS, TOAST_TYPES, MESSAGES } from './constants.js';
+import {
+  STATUS,
+  POLL_TYPES,
+  POLL_TYPE_LABELS,
+  TOAST_TYPES,
+  MESSAGES,
+  VOTE_MARKERS,
+} from './constants.js';
 import { getPolls, getVotes, saveVotes } from './storage.js';
 import {
   createElement,
@@ -19,8 +26,7 @@ import {
 } from './utils.js';
 
 /* Suffixes for the per-poll marker keys stored alongside vote tallies. */
-const VOTED_FLAG = '__voted';
-const CHOICE_KEY = '__choice';
+const { VOTED: VOTED_FLAG, CHOICE: CHOICE_KEY } = VOTE_MARKERS;
 
 /**
  * Create the user Polls section controller.
