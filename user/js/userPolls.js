@@ -14,8 +14,8 @@ import {
   TOAST_TYPES,
   MESSAGES,
   VOTE_MARKERS,
-} from './constants.js';
-import { getPolls, getVotes, saveVotes } from './storage.js';
+} from '../../shared/js/constants.js';
+import { getPolls, getVotes, saveVotes } from '../../shared/js/storage.js';
 import {
   createElement,
   clearElement,
@@ -23,7 +23,7 @@ import {
   calculatePercentage,
   getEffectiveStatus,
   formatDay,
-} from './utils.js';
+} from '../../shared/js/utils.js';
 
 /* Suffixes for the per-poll marker keys stored alongside vote tallies. */
 const { VOTED: VOTED_FLAG, CHOICE: CHOICE_KEY } = VOTE_MARKERS;
@@ -40,38 +40,73 @@ export function createUserPollsSection({ listEl, getSearchTerm }) {
   const activePolls = () =>
     getPolls().filter((poll) => getEffectiveStatus(poll) === STATUS.ACTIVE);
 
-  /** Active polls narrowed by the current search term. */
-  function visiblePolls() {
-    const term = getSearchTerm().trim().toLowerCase();
-    return activePolls().filter(
-      (poll) => !term || poll.question.toLowerCase().includes(term)
-    );
-  }
-
-  /** Render the polls list. */
+  /**
+   * Render the polls split into Active (votable) and Closed (results only)
+   * sections, both narrowed by the current search term.
+   */
   function render() {
-    const polls = visiblePolls();
+    const term = getSearchTerm().trim().toLowerCase();
+    const matches = (poll) =>
+      !term || poll.question.toLowerCase().includes(term);
+
+    const all = getPolls().filter(matches);
+    const active = all.filter(
+      (poll) => getEffectiveStatus(poll) === STATUS.ACTIVE
+    );
+    const closed = all.filter(
+      (poll) => getEffectiveStatus(poll) !== STATUS.ACTIVE
+    );
+
     clearElement(listEl);
 
-    if (!polls.length) {
-      const message = getSearchTerm().trim()
-        ? MESSAGES.NO_POLLS_MATCH
-        : MESSAGES.NO_ACTIVE_POLLS;
+    if (!active.length && !closed.length) {
+      const message = term ? MESSAGES.NO_POLLS_MATCH : MESSAGES.NO_ACTIVE_POLLS;
       listEl.appendChild(
         createElement('p', { className: 'empty-state', text: message })
       );
       return;
     }
 
-    polls.forEach((poll) => listEl.appendChild(renderCard(poll)));
+    if (active.length) {
+      listEl.appendChild(renderSection('Active Polls', active, false));
+    }
+    if (closed.length) {
+      listEl.appendChild(renderSection('Closed Polls', closed, true));
+    }
   }
 
   /**
-   * Render a poll card: voting form when not yet voted, results otherwise.
-   * @param {object} poll
+   * Render a titled section containing a list of poll cards.
+   * @param {string} title
+   * @param {Array<object>} polls
+   * @param {boolean} closed - whether these polls are results-only
    * @returns {HTMLElement}
    */
-  function renderCard(poll) {
+  function renderSection(title, polls, closed) {
+    const grid = createElement('div', {
+      className: 'poll-list',
+      children: polls.map((poll) => renderCard(poll, closed)),
+    });
+    return createElement('section', {
+      className: 'user-section',
+      children: [
+        createElement('h2', {
+          className: 'user-section__title',
+          text: `${title} · ${polls.length}`,
+        }),
+        grid,
+      ],
+    });
+  }
+
+  /**
+   * Render a poll card. Active polls allow voting (or show results once voted);
+   * closed polls are results-only.
+   * @param {object} poll
+   * @param {boolean} [closed]
+   * @returns {HTMLElement}
+   */
+  function renderCard(poll, closed = false) {
     const votes = getVotes();
     const hasVoted = Boolean(votes[`${poll.id}${VOTED_FLAG}`]);
     const totalVotes = countVotes(votes, poll.id);
@@ -87,8 +122,8 @@ export function createUserPollsSection({ listEl, getSearchTerm }) {
           className: 'poll-card__meta',
           children: [
             createElement('span', {
-              className: 'pill pill--info',
-              text: POLL_TYPE_LABELS[poll.type],
+              className: closed ? 'pill pill--inactive' : 'pill pill--info',
+              text: closed ? 'Closed' : POLL_TYPE_LABELS[poll.type],
             }),
             createElement('span', {
               className: 'poll-card__count',
@@ -100,22 +135,28 @@ export function createUserPollsSection({ listEl, getSearchTerm }) {
     });
 
     const card = createElement('article', {
-      className: 'poll-card',
+      className: `poll-card${closed ? ' poll-card--closed' : ''}`,
       children: [header],
     });
 
-    // Show the closing date when the admin scheduled one (only active polls
-    // reach here, so any date shown is still in the future).
+    // Show the schedule note.
     if (poll.activeUntil) {
       card.appendChild(
         createElement('span', {
           className: 'poll-card__deadline',
-          text: `⏳ Closes on ${formatDay(poll.activeUntil)}`,
+          text: closed
+            ? `Closed on ${formatDay(poll.activeUntil)}`
+            : `⏳ Closes on ${formatDay(poll.activeUntil)}`,
         })
       );
     }
 
-    card.appendChild(hasVoted ? renderResults(poll) : renderVotingForm(poll, card));
+    // Closed polls are results-only; active polls allow voting until voted.
+    if (closed || hasVoted) {
+      card.appendChild(renderResults(poll));
+    } else {
+      card.appendChild(renderVotingForm(poll, card));
+    }
     return card;
   }
 

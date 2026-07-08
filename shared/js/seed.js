@@ -1,11 +1,8 @@
 /**
  * seed.js
- * Populates localStorage with realistic sample data the first time the app
- * runs, so every page has something meaningful to show. Ids are fixed (not
- * generated) so responses and votes can reference fields/options reliably.
- *
- * Seeding only happens when there are no forms and no polls yet, so a user's
- * own data is never overwritten.
+ * A ready-made set of realistic sample data, loaded ONLY when the user clicks
+ * "Load Sample Data" on the home page. The app never auto-seeds. Ids are fixed
+ * (not generated) so responses and votes reference fields/options reliably.
  */
 
 import {
@@ -15,7 +12,7 @@ import {
   STATUS,
   STORAGE_KEYS,
 } from './constants.js';
-import { loadFromStorage, saveToStorage } from './storage.js';
+import { saveToStorage } from './storage.js';
 
 /* A fixed reference date so seeded timestamps look natural and stable. */
 const BASE_TIME = new Date('2026-06-01T09:00:00').getTime();
@@ -209,44 +206,13 @@ const SAMPLE_VOTES = {
 };
 
 /**
- * Write the full sample data set into storage, overwriting any current data.
- * Shared by the one-time seeding and the manual "Load Sample Data" action.
+ * Load the full sample data set into storage, replacing any current data.
+ * Triggered by the "Load Sample Data" button on the home page.
  */
-function writeSampleData() {
+export function loadSampleData() {
   saveToStorage(STORAGE_KEYS.FORMS, SAMPLE_FORMS);
   saveToStorage(STORAGE_KEYS.POLLS, SAMPLE_POLLS);
   saveToStorage(STORAGE_KEYS.RESPONSES, SAMPLE_RESPONSES);
   saveToStorage(STORAGE_KEYS.VOTES, SAMPLE_VOTES);
   saveToStorage(STORAGE_KEYS.SUBMISSIONS, {});
-}
-
-/**
- * Seed the sample data set exactly once, ever. A persistent "seeded" flag
- * ensures we never re-add samples after the user has started managing data -
- * so deleting the sample forms/polls makes them stay deleted across refreshes.
- * @returns {boolean} whether seeding happened
- */
-export function seedIfEmpty() {
-  // Already seeded once (even if the user later deleted everything) - do nothing.
-  if (loadFromStorage(STORAGE_KEYS.SEEDED, false)) return false;
-
-  // Mark as seeded up front so this only ever runs once.
-  saveToStorage(STORAGE_KEYS.SEEDED, true);
-
-  // If the user somehow already has data, respect it and skip the samples.
-  const hasForms = (loadFromStorage(STORAGE_KEYS.FORMS, []) ?? []).length > 0;
-  const hasPolls = (loadFromStorage(STORAGE_KEYS.POLLS, []) ?? []).length > 0;
-  if (hasForms || hasPolls) return false;
-
-  writeSampleData();
-  return true;
-}
-
-/**
- * Manually (re)load the sample data everywhere, replacing current data.
- * Triggered by the "Load Sample Data" button on the home page.
- */
-export function loadSampleData() {
-  writeSampleData();
-  saveToStorage(STORAGE_KEYS.SEEDED, true);
 }

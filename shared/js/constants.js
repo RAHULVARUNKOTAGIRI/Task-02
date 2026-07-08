@@ -10,8 +10,7 @@ export const STORAGE_KEYS = Object.freeze({
   POLLS: 'ssfp_polls',
   RESPONSES: 'ssfp_responses',
   VOTES: 'ssfp_votes',
-  SUBMISSIONS: 'ssfp_submissions', // tracks which single-submission forms a user submitted
-  SEEDED: 'ssfp_seeded', // one-time flag so sample data is only ever seeded once
+  SUBMISSIONS: 'ssfp_submissions', // tracks each user's submission count per form
 });
 
 /* Supported form field types */
@@ -45,14 +44,19 @@ export const OPTION_FIELD_TYPES = Object.freeze([
 
 /* Form submission types */
 export const SUBMISSION_TYPES = Object.freeze({
-  SINGLE: 'single',
-  MULTIPLE: 'multiple',
+  SINGLE: 'single', // once only
+  LIMITED: 'limited', // up to a configured number of times
+  MULTIPLE: 'multiple', // unlimited
 });
 
 export const SUBMISSION_TYPE_LABELS = Object.freeze({
   [SUBMISSION_TYPES.SINGLE]: 'Single Submission',
+  [SUBMISSION_TYPES.LIMITED]: 'Limited Submissions',
   [SUBMISSION_TYPES.MULTIPLE]: 'Multiple Submission',
 });
+
+/* Default cap suggested when an admin picks the Limited submission type */
+export const DEFAULT_SUBMISSION_LIMIT = 3;
 
 /* Poll choice types */
 export const POLL_TYPES = Object.freeze({
@@ -103,6 +107,7 @@ export const TOAST_TYPES = Object.freeze({
 /* Reusable user-facing messages (no hardcoded strings in logic) */
 export const MESSAGES = Object.freeze({
   ALREADY_SUBMITTED: 'You have already submitted this form.',
+  LIMIT_REACHED: 'You have reached the submission limit for this form.',
   FORM_SAVED: 'Form saved successfully.',
   FORM_DELETED: 'Form deleted.',
   FORM_SUBMITTED: 'Thank you! Your response has been recorded.',

@@ -14,8 +14,8 @@ import {
   TOAST_TYPES,
   MESSAGES,
   VOTE_MARKERS,
-} from './constants.js';
-import { getPolls, savePolls, getVotes, saveVotes } from './storage.js';
+} from '../../shared/js/constants.js';
+import { getPolls, savePolls, getVotes, saveVotes } from '../../shared/js/storage.js';
 import {
   createElement,
   clearElement,
@@ -28,10 +28,10 @@ import {
   statusPill,
   labeledBlock,
   cardActions,
-} from './utils.js';
-import { openModal, confirmAction } from './app.js';
-import { PollBuilder } from './pollBuilder.js';
-import { validatePollConfig } from './validator.js';
+} from '../../shared/js/utils.js';
+import { openModal, confirmAction } from '../../shared/js/app.js';
+import { PollBuilder } from '../../shared/js/pollBuilder.js';
+import { validatePollConfig } from '../../shared/js/validator.js';
 
 /**
  * Sum all votes recorded for a poll.
@@ -55,7 +55,7 @@ function countVotes(votes, pollId) {
  * @returns {{ render: Function, openCreate: Function }}
  */
 export function createPollsSection({ listEl, getSearchTerm, getFilter }) {
-  /** Render the polls list according to the current search/filter. */
+  /** Render the polls list, grouped into Active and Inactive sections. */
   function render() {
     const votes = getVotes();
     const polls = applySearchAndFilter(
@@ -71,8 +71,39 @@ export function createPollsSection({ listEl, getSearchTerm, getFilter }) {
     }
 
     clearElement(listEl);
-    polls.forEach((poll) => {
-      listEl.appendChild(renderCard(poll, countVotes(votes, poll.id)));
+    const active = polls.filter(
+      (poll) => getEffectiveStatus(poll) === STATUS.ACTIVE
+    );
+    const inactive = polls.filter(
+      (poll) => getEffectiveStatus(poll) !== STATUS.ACTIVE
+    );
+
+    if (active.length) listEl.appendChild(renderGroup('Active', active, votes));
+    if (inactive.length) {
+      listEl.appendChild(renderGroup('Inactive', inactive, votes));
+    }
+  }
+
+  /**
+   * Render a titled group of poll cards.
+   * @param {string} title
+   * @param {Array<object>} group
+   * @param {object} votes
+   * @returns {HTMLElement}
+   */
+  function renderGroup(title, group, votes) {
+    const cards = group.map((poll) =>
+      renderCard(poll, countVotes(votes, poll.id))
+    );
+    return createElement('section', {
+      className: 'list-group',
+      children: [
+        createElement('h2', {
+          className: 'list-group__title',
+          text: `${title} · ${group.length}`,
+        }),
+        createElement('div', { className: 'list', children: cards }),
+      ],
     });
   }
 

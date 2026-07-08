@@ -12,9 +12,10 @@ import {
   STATUS_LABELS,
   SUBMISSION_TYPES,
   SUBMISSION_TYPE_LABELS,
+  DEFAULT_SUBMISSION_LIMIT,
   TOAST_TYPES,
   MESSAGES,
-} from './constants.js';
+} from '../../shared/js/constants.js';
 import {
   getForms,
   saveForms,
@@ -22,7 +23,7 @@ import {
   saveResponses,
   getSubmissions,
   saveSubmissions,
-} from './storage.js';
+} from '../../shared/js/storage.js';
 import {
   createElement,
   clearElement,
@@ -30,15 +31,16 @@ import {
   formatDate,
   formatDay,
   isExpired,
+  getEffectiveStatus,
   applySearchAndFilter,
   renderEmpty,
   statusPill,
   labeledBlock,
   cardActions,
-} from './utils.js';
-import { openModal, confirmAction } from './app.js';
-import { FormBuilder } from './formBuilder.js';
-import { validateFormConfig } from './validator.js';
+} from '../../shared/js/utils.js';
+import { openModal, confirmAction } from '../../shared/js/app.js';
+import { FormBuilder } from '../../shared/js/formBuilder.js';
+import { validateFormConfig } from '../../shared/js/validator.js';
 
 /**
  * Create the Forms section controller.
@@ -49,7 +51,7 @@ import { validateFormConfig } from './validator.js';
  * @returns {{ render: Function, openCreate: Function }}
  */
 export function createFormsSection({ listEl, getSearchTerm, getFilter }) {
-  /** Render the forms list according to the current search/filter. */
+  /** Render the forms list, grouped into Active and Inactive sections. */
   function render() {
     const responses = getResponses();
     const forms = applySearchAndFilter(
@@ -65,9 +67,41 @@ export function createFormsSection({ listEl, getSearchTerm, getFilter }) {
     }
 
     clearElement(listEl);
-    forms.forEach((form) => {
-      const responseCount = responses[form.id]?.length ?? 0;
-      listEl.appendChild(renderCard(form, responseCount));
+    const active = forms.filter(
+      (form) => getEffectiveStatus(form) === STATUS.ACTIVE
+    );
+    const inactive = forms.filter(
+      (form) => getEffectiveStatus(form) !== STATUS.ACTIVE
+    );
+
+    if (active.length) {
+      listEl.appendChild(renderGroup('Active', active, responses));
+    }
+    if (inactive.length) {
+      listEl.appendChild(renderGroup('Inactive', inactive, responses));
+    }
+  }
+
+  /**
+   * Render a titled group of form cards.
+   * @param {string} title
+   * @param {Array<object>} group
+   * @param {object} responses
+   * @returns {HTMLElement}
+   */
+  function renderGroup(title, group, responses) {
+    const cards = group.map((form) =>
+      renderCard(form, responses[form.id]?.length ?? 0)
+    );
+    return createElement('section', {
+      className: 'list-group',
+      children: [
+        createElement('h2', {
+          className: 'list-group__title',
+          text: `${title} · ${group.length}`,
+        }),
+        createElement('div', { className: 'list', children: cards }),
+      ],
     });
   }
 
@@ -117,9 +151,96 @@ export function createFormsSection({ listEl, getSearchTerm, getFilter }) {
       onDelete: () => remove(form.id),
     });
 
+    // Let the admin open the collected responses for this form.
+    actions.prepend(
+      createElement('button', {
+        className: 'btn btn--secondary btn--sm',
+        text: `Responses (${responseCount})`,
+        attrs: { type: 'button' },
+        on: { click: () => openResponses(form) },
+      })
+    );
+
     return createElement('div', {
       className: 'list-card',
       children: [meta, actions],
+    });
+  }
+
+  /**
+   * Open a modal listing every response collected for a form as a table.
+   * @param {object} form
+   */
+  function openResponses(form) {
+    const list = getResponses()[form.id] ?? [];
+    const content = list.length
+      ? buildResponsesTable(form, list)
+      : createElement('p', {
+          className: 'empty-state',
+          text: 'No responses have been submitted yet.',
+        });
+
+    const closeButton = createElement('button', {
+      className: 'btn btn--secondary',
+      text: 'Close',
+      attrs: { type: 'button' },
+      on: { click: () => modal.close() },
+    });
+
+    const modal = openModal({
+      title: `Responses · ${form.name}`,
+      content,
+      actions: [closeButton],
+    });
+  }
+
+  /**
+   * Build a scrollable table of responses (one column per field).
+   * @param {object} form
+   * @param {Array<object>} list
+   * @returns {HTMLElement}
+   */
+  function buildResponsesTable(form, list) {
+    const headRow = createElement('tr', {
+      children: [
+        createElement('th', { text: '#' }),
+        createElement('th', { text: 'Submitted' }),
+        ...form.fields.map((field) =>
+          createElement('th', { text: field.label })
+        ),
+      ],
+    });
+
+    const bodyRows = list.map((response, index) => {
+      const cells = [
+        createElement('td', { text: String(index + 1) }),
+        createElement('td', { text: formatDate(response.submittedAt) }),
+        ...form.fields.map((field) => {
+          const value = response.values[field.id];
+          const text = Array.isArray(value) ? value.join(', ') : value ?? '';
+          return createElement('td', { text: text === '' ? '—' : text });
+        }),
+      ];
+      return createElement('tr', { children: cells });
+    });
+
+    const table = createElement('table', {
+      className: 'data-table',
+      children: [
+        createElement('thead', { children: [headRow] }),
+        createElement('tbody', { children: bodyRows }),
+      ],
+    });
+
+    return createElement('div', {
+      className: 'table-wrap',
+      children: [
+        createElement('p', {
+          className: 'table-summary',
+          text: `${list.length} response${list.length === 1 ? '' : 's'}`,
+        }),
+        table,
+      ],
     });
   }
 
@@ -170,11 +291,31 @@ export function createFormsSection({ listEl, getSearchTerm, getFilter }) {
       attrs: { type: 'date', value: existing?.activeUntil ?? '' },
     });
 
+    // Max submissions per user - only meaningful for the "Limited" type.
+    const maxSubmissionsInput = createElement('input', {
+      className: 'form-control',
+      attrs: {
+        type: 'number',
+        min: '1',
+        step: '1',
+        value: existing?.maxSubmissions ?? DEFAULT_SUBMISSION_LIMIT,
+      },
+    });
+
+    // Enable the max-submissions input only when Limited is selected.
+    const syncMaxState = () => {
+      maxSubmissionsInput.disabled =
+        submissionSelect.value !== SUBMISSION_TYPES.LIMITED;
+    };
+    submissionSelect.addEventListener('change', syncMaxState);
+    syncMaxState();
+
     const topRow = createElement('div', {
       className: 'editor-grid',
       children: [
         labeledBlock('Form Name', nameInput),
         labeledBlock('Submission Type', submissionSelect),
+        labeledBlock('Max Submissions (Limited only)', maxSubmissionsInput),
         labeledBlock('Status', statusSelect),
         labeledBlock('Active Until (optional)', activeUntilInput),
       ],
@@ -212,6 +353,10 @@ export function createFormsSection({ listEl, getSearchTerm, getFilter }) {
             ...builder.getConfig(),
             name: nameInput.value.trim(),
             submissionType: submissionSelect.value,
+            maxSubmissions:
+              submissionSelect.value === SUBMISSION_TYPES.LIMITED
+                ? Math.max(1, Number(maxSubmissionsInput.value) || 1)
+                : null,
             status: statusSelect.value,
             activeUntil: activeUntilInput.value || null,
           };

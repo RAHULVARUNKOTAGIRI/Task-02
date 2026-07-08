@@ -1,17 +1,14 @@
 /**
  * app.js
  * Shared bootstrap logic loaded on every page:
- *  - seeds sample data on first run
  *  - active navigation highlighting
  *  - a reusable modal + confirmation dialog
+ *
+ * Note: sample data is NOT auto-loaded. The app starts empty; use the
+ * "Load Sample Data" button on the home page to populate it on demand.
  */
 
 import { createElement } from './utils.js';
-import { seedIfEmpty } from './seed.js';
-
-// Seed sample data on first load. Runs at module-evaluation time, which is
-// before any page controller's init() executes, so lists are never empty.
-seedIfEmpty();
 
 /**
  * Highlight the nav link matching the current page.

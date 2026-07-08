@@ -1,0 +1,208 @@
+===============================================================================
+ SMART SURVEY, FORMS & POLLING PLATFORM  -  WORKFLOW & ARCHITECTURE
+===============================================================================
+ A configuration-driven platform built with plain HTML5, CSS3 and ES6+
+ JavaScript (no frameworks, no libraries). All data lives in the browser's
+ localStorage, and every form/poll UI is generated dynamically from stored
+ configuration - nothing about a form or poll is hardcoded.
+===============================================================================
+
+
+1. HOW TO RUN
+-------------------------------------------------------------------------------
+ The app uses ES6 modules (import/export), which browsers only load over HTTP
+ (not the file:// protocol). Start any static server from the project root:
+
+     python -m http.server 8000
+     -> open http://localhost:8000/index.html
+
+ The app starts EMPTY - it never auto-loads anything. Click the
+ "Load Sample Data" button on the home page to populate forms, polls,
+ responses and votes with a realistic sample set (replaces current data).
+
+
+2. FOLDER STRUCTURE
+-------------------------------------------------------------------------------
+ project/
+ |
+ |-- index.html                 Landing page (role chooser + Load Sample Data)
+ |-- WORKFLOW.txt               This document
+ |-- assets/                    Static assets
+ |
+ |-- shared/                    Code shared by every page
+ |     |-- css/
+ |     |     style.css          Design tokens, layout, buttons, tabs, modal,
+ |     |                        toast, pills, cards, tables
+ |     |-- js/
+ |           constants.js       All constants (keys, types, labels, messages)
+ |           storage.js         localStorage read/write + domain getters
+ |           utils.js           Reusable helpers (DOM, dates, status, etc.)
+ |           validator.js       Config + submission validation
+ |           renderer.js        Builds real inputs from a form's JSON config
+ |           formBuilder.js     Admin form-builder (fields/options/reorder)
+ |           pollBuilder.js     Admin poll-builder (options)
+ |           charts.js          Dependency-free SVG pie + bar charts
+ |           app.js             Shared shell: seed, active-nav, modal, confirm
+ |           seed.js            Sample data + one-time/manual seeding
+ |           home.js            Landing-page controller (Load Sample Data)
+ |
+ |-- admin/                     Admin console
+ |     |-- html/admin.html
+ |     |-- css/admin.css        Sidebar, list cards, builder rows
+ |     |-- js/
+ |           admin.js           Controller (tabs, search, filter, wiring)
+ |           adminForms.js      Forms: list, editor, responses, status/delete
+ |           adminPolls.js      Polls: list, editor, status/delete
+ |
+ |-- user/                      End-user portal
+ |     |-- html/user.html
+ |     |-- css/user.css         Tabs, tiles, poll cards, result bars
+ |     |-- js/
+ |           user.js            Controller (tabs, counts, search)
+ |           userForms.js       Active/Closed forms, fill + submit + limits
+ |           userPolls.js       Active/Closed polls, vote + live results
+ |
+ |-- dashboard/                 Statistics
+       |-- html/dashboard.html
+       |-- css/dashboard.css    Banner, stat cards, charts, activity lists
+       |-- js/
+             dashboard.js       Overview (admin) + My Activity (user) views
+
+ Path rules: role JS imports shared modules via "../../shared/js/<name>.js"
+ and sibling modules via "./<name>.js". Role HTML links shared CSS via
+ "../../shared/css/style.css" and its own CSS/JS via "../css" / "../js".
+
+
+3. DATA MODEL (localStorage)
+-------------------------------------------------------------------------------
+ Keys (see constants.js STORAGE_KEYS):
+   ssfp_forms         Array of form configs
+   ssfp_polls         Array of poll configs
+   ssfp_responses     { [formId]: [ {id, submittedAt, values} ] }
+   ssfp_votes         { [pollId]: { [optionId]: count },
+                        [pollId]__voted: true,
+                        [pollId]__choice: [optionId, ...] }
+   ssfp_submissions   { [formId]: submissionCountByThisBrowser }
+
+ FORM config:
+   { id, name, submissionType, maxSubmissions, status, activeUntil,
+     createdAt, fields: [ { id, label, type, required, options[] } ] }
+     - submissionType: "single" | "limited" | "multiple"
+     - maxSubmissions: number (only for "limited")
+     - status: "active" | "inactive"
+     - activeUntil: "YYYY-MM-DD" or null (auto-inactive after this date)
+     - field type: text | number | date | dropdown | radio | checkbox | textarea
+
+ POLL config:
+   { id, question, type, status, activeUntil, createdAt,
+     options: [ { id, text } ] }
+     - type: "single" | "multiple" (choice)
+
+
+4. CORE CONCEPTS
+-------------------------------------------------------------------------------
+ CONFIGURATION-DRIVEN UI
+   renderer.js.renderForm(form) turns a form's JSON config into real DOM
+   inputs (text/number/date/select/radio/checkbox/textarea). No input HTML
+   is ever hardcoded; adding a field type is a config + renderer switch case.
+
+ EFFECTIVE STATUS  (utils.getEffectiveStatus)
+   A form/poll is usable by users only if status === "active" AND its
+   activeUntil date (if set) has not passed. Used by the user portal, the
+   dashboard active counts, and the admin filter, so scheduling is consistent
+   everywhere. utils.isExpired() flags a lapsed schedule.
+
+ SUBMISSION LIMITS  (utils.submissionLimit)
+   single -> 1, limited -> maxSubmissions, multiple -> Infinity.
+   ssfp_submissions counts this browser's submissions per form; the user
+   portal blocks opening a form once the count reaches the limit.
+
+ LIVE UPDATES
+   admin, user and dashboard pages listen for the window "storage" event and
+   re-render, so a change in one tab (e.g. Load Sample Data, a new vote) shows
+   up in other open tabs. The dashboard also refreshes on a timer.
+
+
+5. WEBSITE FLOWS
+-------------------------------------------------------------------------------
+ ADMIN - CREATE / EDIT A FORM
+   1. Admin > Forms tab > "Create Form" (or "Edit" on a card).
+   2. Set name, submission type (+ max submissions if Limited), status,
+      optional "Active Until" date.
+   3. Add fields (label, type, required); for dropdown/radio/checkbox add
+      options. Fields can be reordered or removed.
+   4. Save -> validateFormConfig() checks it -> stored in ssfp_forms.
+   5. Active forms immediately appear to users (no code change).
+
+ ADMIN - VIEW RESPONSES
+   Each form card has "Responses (N)". Opens a table: one row per submission,
+   one column per field, plus the submit time.
+
+ ADMIN - POLLS / STATUS / DELETE
+   Create/edit polls (question, options, single/multiple, status, schedule).
+   Enable/Disable toggles status. Delete asks for confirmation and cascades:
+   deleting a form removes its responses + submission history; deleting a poll
+   removes its votes + markers (so dashboard totals stay correct).
+   Lists are grouped into "Active" and "Inactive" sections; search + filter
+   (All/Active/Inactive) narrow them.
+
+ USER - FILL A FORM
+   1. User portal > Forms tab. Forms are split into "Active Forms" (fillable)
+      and "Closed Forms" (read-only).
+   2. Open an active form -> a modal renders the dynamic inputs.
+   3. Submit -> validateForm() enforces required/number/date/option rules.
+   4. Valid -> response saved; this browser's submission count increments.
+      single: button becomes "Already Submitted"; limited: shows "N left"
+      then "Limit Reached"; multiple: unlimited.
+
+ USER - VOTE IN A POLL
+   1. User portal > Polls tab (Active vs Closed sections).
+   2. Pick option(s) (radio for single, checkbox for multiple) and vote.
+   3. Card swaps to live results: per-option bars, %, total, the leading
+      option highlighted, and a "Your vote" marker on your pick(s).
+
+ DASHBOARD - TWO VIEWS
+   Overview (admin): total forms/polls/responses/votes, active counts,
+     most-submitted form, highest-voted poll, plus a responses-by-form pie
+     chart and a votes-by-poll bar chart (all self-healing - derived from
+     current forms/polls so deleted data never inflates counts).
+   My Activity (user): forms submitted / to fill / missed, polls voted / to
+     vote / missed, and to-do lists linking back to the portal.
+
+
+6. MODULE RESPONSIBILITIES (QUICK REFERENCE)
+-------------------------------------------------------------------------------
+ constants.js   Single source of truth for keys, enums, labels, messages.
+ storage.js     saveToStorage/loadFromStorage + getForms/getPolls/etc.
+ utils.js       generateId, createElement, showToast, formatDate/Day,
+                debounce, calculatePercentage, isExpired, getEffectiveStatus,
+                submissionLimit, statusPill, cardActions, applySearchAndFilter.
+ validator.js   validateField, validateForm, validateFormConfig,
+                validatePollConfig.
+ renderer.js    renderInput/renderForm, collectFormValues, showFormErrors.
+ formBuilder.js FormBuilder class (draft fields/options, reorder, getConfig).
+ pollBuilder.js PollBuilder class (draft options, getConfig).
+ charts.js      renderPieChart, renderBarChart (inline SVG, no libraries).
+ app.js         initShell (active nav), openModal/closeModal,
+                confirmAction (promise-based confirm dialog).
+ seed.js        SAMPLE_* data + loadSampleData (manual, button-triggered).
+ home.js        Wires the "Load Sample Data" button.
+ admin*.js      Admin controllers/sections.
+ user*.js       User controllers/sections.
+ dashboard.js   Dashboard controller (both views).
+
+
+7. VALIDATION RULES (dynamic, from config)
+-------------------------------------------------------------------------------
+   required  -> value must not be empty (per type)
+   number    -> must parse as a number
+   date      -> must be a valid date
+   dropdown  -> a real option must be selected
+   radio     -> selected value must be one of the options
+   checkbox  -> every checked value must be a valid option
+ Admin config checks: form needs a name + >=1 field; option fields need >=2
+ options; Limited type needs a valid max; polls need a question + >=2 options.
+
+===============================================================================
+ END OF WORKFLOW
+===============================================================================

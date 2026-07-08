@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard · Smart Survey Platform</title>
+    <link rel="stylesheet" href="../../shared/css/style.css" />
+    <link rel="stylesheet" href="../css/dashboard.css" />
+  </head>
+  <body>
+    <header class="navbar">
+      <a class="navbar__brand" href="../../index.html">
+        <span class="navbar__logo" aria-hidden="true">📊</span>
+        <span>Smart Survey Platform</span>
+      </a>
+      <nav class="navbar__links" aria-label="Primary">
+        <a class="navbar__link" href="../../index.html" data-nav>Home</a>
+        <a class="navbar__link" href="../../admin/html/admin.html" data-nav>Admin</a>
+        <a class="navbar__link" href="../../user/html/user.html" data-nav>User</a>
+        <a class="navbar__link" href="dashboard.html" data-nav>Dashboard</a>
+      </nav>
+    </header>
+
+    <main class="page">
+      <div class="page__header">
+        <div>
+          <h1 class="page__title">Dashboard</h1>
+          <p class="page__subtitle">
+            Platform-wide overview for admins, plus your own activity.
+          </p>
+        </div>
+        <span class="dashboard__refreshed" id="refreshedAt"></span>
+      </div>
+
+      <!-- Switch between the admin overview and the user's own activity -->
+      <div class="tabs" role="tablist" aria-label="Dashboard views">
+        <button class="tab" type="button" role="tab" data-dash-view="overview">
+          📊 Overview
+        </button>
+        <button class="tab" type="button" role="tab" data-dash-view="me">
+          🙋 My Activity
+        </button>
+      </div>
+
+      <!-- Admin overview -->
+      <section data-dash-panel="overview" aria-label="Admin overview">
+        <section class="dash-banner" aria-label="Summary">
+          <div class="dash-banner__content">
+            <span class="dash-banner__label">Total Responses Collected</span>
+            <span class="dash-banner__value" id="bannerValue">0</span>
+            <span class="dash-banner__meta" id="bannerMeta"></span>
+          </div>
+          <span class="dash-banner__icon" aria-hidden="true">📊</span>
+        </section>
+
+        <section class="stats-grid" id="statsGrid" aria-label="Key statistics"></section>
+
+        <section class="chart-grid" aria-label="Charts">
+          <article class="chart-card">
+            <h3 class="chart-card__title">Responses by Form</h3>
+            <div class="chart-card__body" id="pieChart"></div>
+          </article>
+          <article class="chart-card">
+            <h3 class="chart-card__title">Votes by Poll</h3>
+            <div class="chart-card__body" id="barChart"></div>
+          </article>
+        </section>
+      </section>
+
+      <!-- User's own activity -->
+      <section data-dash-panel="me" aria-label="My activity" hidden>
+        <section class="dash-banner dash-banner--user" aria-label="My summary">
+          <div class="dash-banner__content">
+            <span class="dash-banner__label">Forms You've Submitted</span>
+            <span class="dash-banner__value" id="myBannerValue">0</span>
+            <span class="dash-banner__meta" id="myBannerMeta"></span>
+          </div>
+          <span class="dash-banner__icon" aria-hidden="true">🙋</span>
+        </section>
+
+        <section class="stats-grid" id="myStatsGrid" aria-label="My statistics"></section>
+
+        <section class="chart-grid" aria-label="Things to do">
+          <article class="chart-card">
+            <h3 class="chart-card__title">Forms left to fill</h3>
+            <div id="pendingForms"></div>
+          </article>
+          <article class="chart-card">
+            <h3 class="chart-card__title">Polls left to vote</h3>
+            <div id="pendingPolls"></div>
+          </article>
+        </section>
+      </section>
+    </main>
+
+    <script type="module" src="../js/dashboard.js"></script>
+  </body>
+</html>

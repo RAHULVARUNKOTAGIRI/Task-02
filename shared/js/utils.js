@@ -9,6 +9,7 @@ import {
   STATUS_LABELS,
   EXPIRED_LABEL,
   FILTERS,
+  SUBMISSION_TYPES,
 } from './constants.js';
 
 /**
@@ -158,6 +159,22 @@ export function isExpired(item) {
 export function getEffectiveStatus(item) {
   if (item.status !== STATUS.ACTIVE) return STATUS.INACTIVE;
   return isExpired(item) ? STATUS.INACTIVE : STATUS.ACTIVE;
+}
+
+/**
+ * How many times a single browser may submit a form:
+ *  - Single   -> 1
+ *  - Limited  -> the admin-configured maxSubmissions (at least 1)
+ *  - Multiple -> unlimited (Infinity)
+ * @param {object} form
+ * @returns {number}
+ */
+export function submissionLimit(form) {
+  if (form.submissionType === SUBMISSION_TYPES.SINGLE) return 1;
+  if (form.submissionType === SUBMISSION_TYPES.LIMITED) {
+    return Math.max(1, Number(form.maxSubmissions) || 1);
+  }
+  return Infinity;
 }
 
 /**

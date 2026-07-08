@@ -5,8 +5,8 @@
  * dedicated section modules (adminForms.js / adminPolls.js).
  */
 
-import { FILTERS, STORAGE_KEYS } from './constants.js';
-import { debounce, populateFilter } from './utils.js';
+import { FILTERS, STORAGE_KEYS } from '../../shared/js/constants.js';
+import { debounce, populateFilter } from '../../shared/js/utils.js';
 import { createFormsSection } from './adminForms.js';
 import { createPollsSection } from './adminPolls.js';
 

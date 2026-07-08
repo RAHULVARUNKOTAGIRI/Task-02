@@ -22,6 +22,11 @@
   box-shadow: var(--shadow-md);
 }
 
+/* User-activity banner uses a distinct teal/sky gradient */
+.dash-banner--user {
+  background: linear-gradient(135deg, #0f766e 0%, #0ea5e9 60%, #38bdf8 100%);
+}
+
 .dash-banner__content {
   display: flex;
   flex-direction: column;
@@ -228,6 +233,30 @@
 .chart-bar__label {
   font-size: 11px;
   fill: var(--color-text-muted);
+}
+
+/* ---- To-do lists (My Activity: pending forms/polls) --------------------- */
+.todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.todo-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-alt);
+}
+
+.todo-list__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ---- Responsive ---------------------------------------------------------- */

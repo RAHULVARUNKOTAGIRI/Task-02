@@ -4,24 +4,39 @@
  * renders a summary banner, stat cards, and pie/bar charts.
  */
 
-import { STATUS, STORAGE_KEYS } from './constants.js';
-import { getForms, getPolls, getResponses, getVotes } from './storage.js';
+import { STATUS, STORAGE_KEYS, VOTE_MARKERS } from '../../shared/js/constants.js';
+import {
+  getForms,
+  getPolls,
+  getResponses,
+  getVotes,
+  getSubmissions,
+} from '../../shared/js/storage.js';
 import {
   createElement,
   clearElement,
   formatDate,
   getEffectiveStatus,
-} from './utils.js';
-import { renderPieChart, renderBarChart } from './charts.js';
+} from '../../shared/js/utils.js';
+import { renderPieChart, renderBarChart } from '../../shared/js/charts.js';
 
 /* Cached DOM references. */
 const elements = {
+  navButtons: document.querySelectorAll('[data-dash-view]'),
+  panels: document.querySelectorAll('[data-dash-panel]'),
+  refreshedAt: document.getElementById('refreshedAt'),
+  // Overview (admin)
   bannerValue: document.getElementById('bannerValue'),
   bannerMeta: document.getElementById('bannerMeta'),
   statsGrid: document.getElementById('statsGrid'),
   pieChart: document.getElementById('pieChart'),
   barChart: document.getElementById('barChart'),
-  refreshedAt: document.getElementById('refreshedAt'),
+  // My Activity (user)
+  myBannerValue: document.getElementById('myBannerValue'),
+  myBannerMeta: document.getElementById('myBannerMeta'),
+  myStatsGrid: document.getElementById('myStatsGrid'),
+  pendingForms: document.getElementById('pendingForms'),
+  pendingPolls: document.getElementById('pendingPolls'),
 };
 
 /** Interval (ms) for the live auto refresh. */
@@ -199,16 +214,137 @@ function renderCharts(stats) {
   elements.barChart.appendChild(renderBarChart(votesByPoll));
 }
 
-/** Recompute and re-render the whole dashboard. */
+/* --------------------------------------------------------------------------
+ * My Activity (user view)
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Compute this browser's personal activity: what was submitted/voted, what is
+ * still pending (active but not done), and what was missed (closed, not done).
+ * @returns {object}
+ */
+function computeMyActivity() {
+  const forms = getForms();
+  const polls = getPolls();
+  const submissions = getSubmissions();
+  const votes = getVotes();
+
+  const isFormSubmitted = (form) => Boolean(submissions[form.id]);
+  const isPollVoted = (poll) => Boolean(votes[`${poll.id}${VOTE_MARKERS.VOTED}`]);
+  const isFormActive = (form) => getEffectiveStatus(form) === STATUS.ACTIVE;
+  const isPollActive = (poll) => getEffectiveStatus(poll) === STATUS.ACTIVE;
+
+  return {
+    submittedForms: forms.filter(isFormSubmitted),
+    pendingForms: forms.filter((form) => isFormActive(form) && !isFormSubmitted(form)),
+    missedForms: forms.filter((form) => !isFormActive(form) && !isFormSubmitted(form)),
+    votedPolls: polls.filter(isPollVoted),
+    pendingPolls: polls.filter((poll) => isPollActive(poll) && !isPollVoted(poll)),
+    missedPolls: polls.filter((poll) => !isPollActive(poll) && !isPollVoted(poll)),
+    totalSubmissions: forms.reduce(
+      (sum, form) => sum + (submissions[form.id] ?? 0),
+      0
+    ),
+  };
+}
+
+/**
+ * Render a small "to-do" list (pending forms/polls) with a link to act.
+ * @param {HTMLElement} container
+ * @param {string[]} labels
+ * @param {string} emptyText
+ */
+function renderTodoList(container, labels, emptyText) {
+  if (!container) return;
+  clearElement(container);
+
+  if (!labels.length) {
+    container.appendChild(
+      createElement('p', { className: 'empty-state', text: emptyText })
+    );
+    return;
+  }
+
+  const items = labels.map((label) =>
+    createElement('li', {
+      className: 'todo-list__item',
+      children: [
+        createElement('span', { className: 'todo-list__label', text: label }),
+        createElement('a', {
+          className: 'btn btn--secondary btn--sm',
+          text: 'Go →',
+          attrs: { href: 'user.html' },
+        }),
+      ],
+    })
+  );
+
+  container.appendChild(
+    createElement('ul', { className: 'todo-list', children: items })
+  );
+}
+
+/** Render the user's personal activity view. */
+function renderMyActivity() {
+  const me = computeMyActivity();
+
+  if (elements.myBannerValue) {
+    elements.myBannerValue.textContent = me.submittedForms.length;
+  }
+  if (elements.myBannerMeta) {
+    elements.myBannerMeta.textContent = `${me.totalSubmissions} total submissions · ${me.votedPolls.length} polls voted`;
+  }
+
+  const cards = [
+    { label: 'Forms Submitted', value: me.submittedForms.length, icon: '✅', accent: 'success' },
+    { label: 'Forms To Fill', value: me.pendingForms.length, icon: '📝', accent: 'primary' },
+    { label: 'Forms Missed', value: me.missedForms.length, icon: '⌛', accent: 'warning' },
+    { label: 'Polls Voted', value: me.votedPolls.length, icon: '🗳️', accent: 'info' },
+    { label: 'Polls To Vote', value: me.pendingPolls.length, icon: '👉', accent: 'violet' },
+    { label: 'Polls Missed', value: me.missedPolls.length, icon: '⌛', accent: 'danger' },
+  ];
+
+  clearElement(elements.myStatsGrid);
+  cards.forEach((card) =>
+    elements.myStatsGrid.appendChild(renderStatCard(card))
+  );
+
+  renderTodoList(
+    elements.pendingForms,
+    me.pendingForms.map((form) => form.name),
+    'You have filled every active form. 🎉'
+  );
+  renderTodoList(
+    elements.pendingPolls,
+    me.pendingPolls.map((poll) => poll.question),
+    'You have voted in every active poll. 🎉'
+  );
+}
+
+/** Recompute and re-render both dashboard views. */
 function renderDashboard() {
   const stats = computeStats();
   renderBanner(stats);
   renderStatCards(stats);
   renderCharts(stats);
+  renderMyActivity();
 
   if (elements.refreshedAt) {
     elements.refreshedAt.textContent = `Updated ${formatDate(Date.now())}`;
   }
+}
+
+/**
+ * Switch between the Overview and My Activity views.
+ * @param {string} view
+ */
+function switchView(view) {
+  elements.navButtons.forEach((button) => {
+    button.classList.toggle('is-active', button.dataset.dashView === view);
+  });
+  elements.panels.forEach((panel) => {
+    panel.hidden = panel.dataset.dashPanel !== view;
+  });
 }
 
 /* --------------------------------------------------------------------------
@@ -217,6 +353,10 @@ function renderDashboard() {
 
 /** Attach event listeners. */
 function bindEvents() {
+  elements.navButtons.forEach((button) => {
+    button.addEventListener('click', () => switchView(button.dataset.dashView));
+  });
+
   // Refresh when another tab changes storage (real cross-tab live updates).
   window.addEventListener('storage', (event) => {
     if (Object.values(STORAGE_KEYS).includes(event.key)) renderDashboard();
@@ -226,6 +366,7 @@ function bindEvents() {
 /** Entry point for the dashboard page. */
 function init() {
   bindEvents();
+  switchView('overview');
   renderDashboard();
   // Periodic refresh keeps the "live" dashboard current within a single tab.
   setInterval(renderDashboard, REFRESH_INTERVAL);

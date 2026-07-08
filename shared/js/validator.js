@@ -4,7 +4,11 @@
  * Rules are derived entirely from each field's config - nothing hardcoded.
  */
 
-import { FIELD_TYPES, OPTION_FIELD_TYPES } from './constants.js';
+import {
+  FIELD_TYPES,
+  OPTION_FIELD_TYPES,
+  SUBMISSION_TYPES,
+} from './constants.js';
 
 /**
  * Validate a single field's value against its configuration.
@@ -98,6 +102,14 @@ export function validateFormConfig(form) {
 
   if (!form.fields.length) {
     problems.push('Add at least one field.');
+  }
+
+  // Limited submission type needs a valid positive cap.
+  if (form.submissionType === SUBMISSION_TYPES.LIMITED) {
+    const limit = Number(form.maxSubmissions);
+    if (!Number.isInteger(limit) || limit < 1) {
+      problems.push('Set a valid maximum number of submissions (1 or more).');
+    }
   }
 
   form.fields.forEach((field, index) => {

@@ -4,8 +4,8 @@
  * and delegates rendering to the Forms and Polls section modules.
  */
 
-import { STORAGE_KEYS } from './constants.js';
-import { debounce } from './utils.js';
+import { STORAGE_KEYS } from '../../shared/js/constants.js';
+import { debounce } from '../../shared/js/utils.js';
 import { createUserFormsSection } from './userForms.js';
 import { createUserPollsSection } from './userPolls.js';
 
