@@ -13,6 +13,13 @@ export const STORAGE_KEYS = Object.freeze({
   SUBMISSIONS: 'ssfp_submissions', // tracks each user's submission count per form
 });
 
+/**
+ * Standalone one-time flag (NOT part of STORAGE_KEYS, so clearAllData never
+ * removes it). Marks that the one-time cleanup of legacy auto-seeded data has
+ * already run for this browser.
+ */
+export const RESET_STORAGE_FLAG = 'ssfp_reset_done';
+
 /* Supported form field types */
 export const FIELD_TYPES = Object.freeze({
   TEXT: 'text',

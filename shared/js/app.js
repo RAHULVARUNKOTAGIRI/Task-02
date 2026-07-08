@@ -9,6 +9,17 @@
  */
 
 import { createElement } from './utils.js';
+import { loadFromStorage, saveToStorage, clearAllData } from './storage.js';
+import { RESET_STORAGE_FLAG } from './constants.js';
+
+// One-time cleanup: wipe any data left over from older builds that used to
+// auto-seed, so a freshly opened site starts empty. Runs once per browser;
+// after this, data only appears when the user loads samples or creates their
+// own. (The flag itself is not a STORAGE_KEY, so clearing data won't reset it.)
+if (!loadFromStorage(RESET_STORAGE_FLAG, false)) {
+  clearAllData();
+  saveToStorage(RESET_STORAGE_FLAG, true);
+}
 
 /**
  * Highlight the nav link matching the current page.
