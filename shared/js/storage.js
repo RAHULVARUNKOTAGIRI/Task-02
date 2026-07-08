@@ -44,6 +44,14 @@ export function removeFromStorage(key) {
   localStorage.removeItem(key);
 }
 
+/**
+ * Remove every piece of application data (forms, polls, responses, votes,
+ * submissions). Used by the home page "Clear All Data" action.
+ */
+export function clearAllData() {
+  Object.values(STORAGE_KEYS).forEach((key) => removeFromStorage(key));
+}
+
 /* ----------------------------------------------------------------------------
  * Domain specific helpers. Each collection is stored as an array of objects.
  * -------------------------------------------------------------------------- */

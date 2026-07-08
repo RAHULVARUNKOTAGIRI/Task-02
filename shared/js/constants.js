@@ -130,6 +130,9 @@ export const MESSAGES = Object.freeze({
   CONFIRM_LOAD_SAMPLE:
     'This replaces all current forms, polls, responses and votes with the sample data set. Continue?',
   SAMPLE_LOADED: 'Sample data loaded. Open Admin, User, or Dashboard to explore it.',
+  CONFIRM_CLEAR_DATA:
+    'This permanently deletes ALL forms, polls, responses and votes. Continue?',
+  DATA_CLEARED: 'All data cleared. The app is now empty.',
 });
 
 /* Field types that support option lists, exposed as a labelled map too */
